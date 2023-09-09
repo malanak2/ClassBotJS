@@ -13,7 +13,7 @@ const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-for (const folder of commandFolders) {
+for (const folder of commandFolders) { // Skenuje pro commandy v složce commands
 	const commandsPath = path.join(foldersPath, folder);
 	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
@@ -30,9 +30,9 @@ for (const folder of commandFolders) {
     }
 }
 
-const rest = new REST().setToken(token);
+const rest = new REST().setToken(token); // Nastaví token pro endpointy asi
 
-(async () => {
+(async () => { //Registrace příkazů
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
@@ -49,7 +49,7 @@ const rest = new REST().setToken(token);
 	}
 })();
 
-client.on(Events.InteractionCreate, async interaction => {
+client.on(Events.InteractionCreate, async interaction => { // Handling příkazů
     if (!interaction.isChatInputCommand()) return;
     const command = interaction.client.commands.get(interaction.commandName);
 
@@ -71,14 +71,16 @@ client.on(Events.InteractionCreate, async interaction => {
 	//console.log(interaction);
 });
 
-// When the client is ready, run this code (only once)
-// We use 'c' for the event parameter to keep it separate from the already defined 'client'
 client.once(Events.ClientReady, c => {
+	// Kód zde je on ready
 	console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
-client.once(Events.ClientReady, c => {
-	console.log(`Ready! Logged in as ${c.user.tag}`);
-});
 
-client.login(token)
+
+/*const guild = client.guilds.cache.get(guildId);
+const data = rest.put(
+	Routes.applicationCommands(clientId),
+	{ body: null },
+);*/ // Clears guild specific commands
+client.login(token) // Logins with token
