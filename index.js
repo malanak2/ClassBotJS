@@ -1,8 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits} = require("discord.js");
-const { token } = require("./config.json");
+const { Client, Collection, Events, GatewayIntentBits, Routes, REST} = require("discord.js");
+const { token, clientId, guildId } = require("./config.json");
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+const commands = [];
 
 client.commands = new Collection();
 
@@ -19,6 +21,7 @@ for (const folder of commandFolders) {
         const command = require(filePath);
         // Set a new item in the Collection with the key as the command name and the value as the exported module
         if ('data' in command && 'execute' in command) {
+			commands.push(command.data.toJSON());
             client.commands.set(command.data.name, command);
 			console.log(`Added command ${command.data.name} from path ${filePath}`)
         } else {
@@ -26,6 +29,25 @@ for (const folder of commandFolders) {
         }
     }
 }
+
+const rest = new REST().setToken(token);
+
+(async () => {
+	try {
+		console.log(`Started refreshing ${commands.length} application (/) commands.`);
+
+		// The put method is used to fully refresh all commands in the guild with the current set
+		const data = await rest.put(
+			Routes.applicationGuildCommands(clientId, guildId),
+			{ body: commands },
+		);
+
+		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+	} catch (error) {
+		// And of course, make sure you catch and log any errors!
+		console.error(error);
+	}
+})();
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
@@ -46,7 +68,7 @@ client.on(Events.InteractionCreate, async interaction => {
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 	}
-	console.log(interaction);
+	//console.log(interaction);
 });
 
 // When the client is ready, run this code (only once)
